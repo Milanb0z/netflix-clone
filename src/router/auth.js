@@ -11,8 +11,14 @@ const router = new express.Router();
 router.post("/register", async (req, res) => {
   const { username, email, password, profilePic } = req.body;
   try {
-    const hashedPassword = await bcrypt.hash(password, 8);
+    const isUserExists = await User.findOne({ email });
 
+    if (isUserExists) {
+      return res.status(402).send({ message: "User already exists" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 8);
+    // Creating new User
     const newUser = new User({
       username,
       email,
@@ -21,7 +27,6 @@ router.post("/register", async (req, res) => {
     });
 
     const savedUser = await newUser.save();
-
     res.send(savedUser);
   } catch (error) {
     res.status(500).send({ error });
@@ -45,7 +50,13 @@ router.post("/login", async (req, res) => {
       return res.status(401).send({ message: "Invalid Credentials" });
     }
 
-    res.send(savedUser);
+    const token = jwt.sign(
+      { id: savedUser._id, isAdmin: savedUser.isAdmin },
+      process.env.JWT_SECRET,
+      { expiredIn: "2d" }
+    );
+
+    res.send(token);
   } catch (error) {
     res.status(500).send({ error });
     console.log(error);
