@@ -7,6 +7,8 @@ const UserSchema = new mongoose.Schema(
     password: { type: String, unique: true },
     profilePic: { type: String, default: "" },
     isAdmin: { type: Boolean, default: false },
+    likedMovies: [{ type: mongoose.Schema.Types.ObjectId, ref: "Movie" }],
+    watchLater: [{ type: mongoose.Schema.Types.ObjectId, ref: "Movie" }],
   },
   { timestamps: true }
 );
